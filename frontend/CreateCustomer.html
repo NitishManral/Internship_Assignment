@@ -1,0 +1,69 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Customer List</title>
+    <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
+
+    <script>
+        function getCustomerList() {
+            var access_token = localStorage.getItem("access_token");
+            console.log(access_token);
+            
+            axios({
+    method: 'get',
+    url: 'http://localhost:3000/api/assignment.jsp',
+    headers: {
+        Authorization: access_token
+    },
+    params: {
+        cmd: 'get_customer_list'
+    }
+})
+                .then(function (response) {
+                        if (response.ok) {
+                                        return response.json();
+                                    } else {
+                                        throw new Error("Error: " + response.status);
+                                    }
+                }).then(function(customers) {
+                                    var customerTable = document.getElementById("customerTable");
+                                    customers.forEach(function(customer) {
+                                        var row = customerTable.insertRow();
+                                        row.insertCell().textContent = customer.first_name;
+                                        row.insertCell().textContent = customer.last_name;
+                                        row.insertCell().textContent = customer.street;
+                                        row.insertCell().textContent = customer.address;
+                                        row.insertCell().textContent = customer.city;
+                                        row.insertCell().textContent = customer.state;
+                                        row.insertCell().textContent = customer.email;
+                                        row.insertCell().textContent = customer.phone;
+                                    });
+                })
+                .catch(function (error) {
+                        // handle error
+                        console.log(error);
+                    });
+
+        }
+    
+        // Call the getCustomerList function when the page loads
+        window.onload = getCustomerList;
+    </script>
+</head>
+<body>
+    <h1>Customer List</h1>
+    <table id="customerTable">
+        <tr>
+            <th>First Name</th>
+            <th>Last Name</th>
+            <th>Street</th>
+            <th>Address</th>
+            <th>City</th>
+            <th>State</th>
+            <th>Email</th>
+            <th>Phone</th>
+        </tr>
+    </table>
+</body>
+
+</html>

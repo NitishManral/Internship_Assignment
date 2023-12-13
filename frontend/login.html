@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Login</title>
+    <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
+</head>
+<body>
+    <h2>Login</h2>
+    <form id="loginForm">
+        <label for="login_id">Login ID:</label><br>
+        <input type="text" id="login_id" name="login_id" value="test@sunbasedata.com"><br>
+        <label for="password">Password:</label><br>
+        <input type="password" id="password" name="password" value="Test@123"><br>
+        <button id="login" onclick="authenticateUser(event)" >Click me</button>   
+     </form>
+</body>
+<script>
+    function authenticateUser(event) {
+        event.preventDefault();
+        const login_id = document.getElementById("login_id").value;
+        const password = document.getElementById("password").value;
+
+        axios({
+            method: 'post',
+            url: 'http://localhost:3000/api/assignment_auth.jsp',
+            data: {
+                login_id: login_id,
+                password: password
+            }
+        })
+        .then(function (response) {
+            // handle success
+            console.log(response);
+            // Store the bearer token for further API calls
+            localStorage.setItem('access_token', response.data.access_token);
+            window.location.href = 'CreateCustomer.html';
+        })
+        .catch(function (error) {
+            // handle error
+            console.log(error);
+        });
+    }
+</script>
+</html>
