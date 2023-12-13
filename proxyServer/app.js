@@ -9,10 +9,9 @@ app.use('/api', createProxyMiddleware({
     target: 'https://qa2.sunbasedata.com', // target API server here
     changeOrigin: true,
     pathRewrite: {
-        [`^/api`]: '/sunbase/portal/api', // rewrite path
-    },
+        [`^/api`]: 'sunbase/portal/api', // rewrite path
+    }
 }));
-//https://qa2.sunbasedata.com/sunbase/portal/api/assignment.jsp
 app.listen(3000, () => {
     console.log('Proxy server is running on port 3000');
 });
