@@ -3,13 +3,13 @@ const { createProxyMiddleware } = require('http-proxy-middleware');
 const cors = require('cors');
 
 const app = express();
-app.use(cors()); // Use cors middleware here
+app.use(cors()); 
 
 app.use('/api', createProxyMiddleware({ 
-    target: 'https://qa2.sunbasedata.com', // target API server here
+    target: 'https://qa2.sunbasedata.com', 
     changeOrigin: true,
     pathRewrite: {
-        [`^/api`]: 'sunbase/portal/api', // rewrite path
+        [`^/api`]: 'sunbase/portal/api',
     },
     timeout: 5000,
 }));
