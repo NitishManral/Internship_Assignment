@@ -3,16 +3,59 @@
 <head>
     <title>Login</title>
     <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f2f2f2;
+            margin: 0;
+            padding: 20px;
+        }
+
+        h2 {
+            color: #333;
+        }
+
+        form {
+            margin-top: 20px;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 5px;
+        }
+
+        input[type="text"],
+        input[type="password"] {
+            width: 200px;
+            padding: 5px;
+            margin-bottom: 10px;
+        }
+
+        button {
+            padding: 10px 20px;
+            background-color: #4CAF50;
+            color: white;
+            border: none;
+            cursor: pointer;
+        }
+
+        #errorLabel {
+            display: none;
+            color: red;
+            margin-top: 10px;
+        }
+    </style>
 </head>
 <body>
     <h2>Login</h2>
     <form id="loginForm">
         <label for="login_id">Login ID:</label><br>
-        <input type="text" id="login_id" name="login_id" value="test@sunbasedata.com"><br>
+        <input type="text" id="login_id" name="login_id"><br>
         <label for="password">Password:</label><br>
-        <input type="password" id="password" name="password" value="Test@123"><br>
-        <button id="login" onclick="authenticateUser(event)" >Click me</button>   
-     </form>
+        <input type="password" id="password" name="password" autocomplete="off"><br>
+        <button id="login" onclick="authenticateUser(event)">Click me</button>   
+        <label for="error" id="errorLabel">*wrong username or password</label>
+    </form>
 </body>
 <script>
     function authenticateUser(event) {
@@ -23,20 +66,20 @@
         axios({
             method: 'post',
             url: 'http://localhost:3000/api/assignment_auth.jsp',
+            headers: {
+                "Content-Type": "application/json"
+            },
             data: {
                 login_id: login_id,
                 password: password
             }
         })
         .then(function (response) {
-            // handle success
-            console.log(response);
-            // Store the bearer token for further API calls
             localStorage.setItem('access_token', response.data.access_token);
-            window.location.href = 'CreateCustomer.html';
+            window.location.href = 'CustomerList.html';
         })
         .catch(function (error) {
-            // handle error
+            document.getElementById('errorLabel').style.display = "";
             console.log(error);
         });
     }

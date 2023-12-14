@@ -1,0 +1,235 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Customer List</title>
+    <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 20px;
+        }
+        
+        h1 {
+            text-align: center;
+        }
+        
+        #addCustomer {
+            display: block;
+            margin-bottom: 20px;
+        }
+        
+        table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+        
+        th, td {
+            padding: 8px;
+            text-align: left;
+        }
+        
+        th {
+            background-color: #f2f2f2;
+        }
+        
+        tr:nth-child(even) {
+            background-color: #f9f9f9;
+        }
+        
+        .actions {
+            display: flex;
+            justify-content: space-between;
+        }
+        
+        .actions button {
+            margin-left: 5px;
+        }
+    </style>
+</head>
+<body>
+    <h1>Customer List</h1>
+    <button id="addCustomer" onclick="window.location.href = 'CreateCustomer.html';">Add Customer</button>
+    <table id="customerTable" border="1" cellpadding="4">
+        <tr>
+            <th>First Name</th>
+            <th>Last Name</th>
+            <th>Street</th>
+            <th>Address</th>
+            <th>City</th>
+            <th>State</th>
+            <th>Email</th>
+            <th>Phone</th>
+            <th>Actions</th> <!-- New column for actions -->
+        </tr>
+    </table>
+</body>
+<script>
+    const access_token = localStorage.getItem("access_token");
+
+    function getCustomerList() {
+        axios("http://localhost:3000/api/assignment.jsp?cmd=get_customer_list", {
+            method:"get",
+           headers: {
+                Authorization: "Bearer " + access_token,
+            },
+        })
+        .then(function (response) {
+            console.log(response);
+            return response.data;
+        }).then(function(customers) {
+            var customerTable = document.getElementById("customerTable");
+            customers.forEach(function(customer) {
+                var row = customerTable.insertRow();
+                row.id=customer.uuid;
+                let cell;
+                            
+                cell = row.insertCell();
+                cell.textContent = customer.first_name;
+                cell.className = 'first_name';
+                            
+                cell = row.insertCell();
+                cell.textContent = customer.last_name;
+                cell.className = 'last_name';
+                            
+                cell = row.insertCell();
+                cell.textContent = customer.street;
+                cell.className = 'street';
+                            
+                cell = row.insertCell();
+                cell.textContent = customer.address;
+                cell.className = 'address';
+                            
+                cell = row.insertCell();
+                cell.textContent = customer.city;
+                cell.className = 'city';
+                            
+                cell = row.insertCell();
+                cell.textContent = customer.state;
+                cell.className = 'state';
+                            
+                cell = row.insertCell();
+                cell.textContent = customer.email;
+                cell.className = 'email';
+                            
+                cell = row.insertCell();
+                cell.textContent = customer.phone;
+                cell.className = 'phone';
+
+                // Add edit button
+                var editButton = document.createElement("button");
+                editButton.textContent = "Edit";
+                editButton.addEventListener("click", function() {
+                    editButton.disabled =true;
+                    editRecord(row, customer.uuid,editButton);
+                });
+                row.insertCell().appendChild(editButton);
+
+                // Add delete button
+                var deleteButton = document.createElement("button");
+                deleteButton.textContent = "Delete";
+                deleteButton.addEventListener("click", function() {
+                    deleteCustomer(customer.uuid);
+                });
+                row.insertCell().appendChild(deleteButton);
+            });
+        })
+        .catch((error)=>{
+            showAlertError("Error occured, check logs");
+            console.log(error);
+        });
+    }
+
+    function editRecord(row, uuid,editButton) {
+        // Set the contenteditable property to true for each cell in the row
+        var cells = row.cells;
+        for (var i = 0; i < cells.length -3; i++) {
+            var cell = cells[i];
+            cell.contentEditable = true;
+        }
+        // row.style.backgroundColor = 'lightgreen';
+        var saveButton = document.createElement("button");
+        saveButton.textContent = "Save";
+        saveButton.addEventListener("click", function() {
+            var firstNameElement = row.getElementsByClassName('first_name')[0];
+            var lastNameElement = row.getElementsByClassName('last_name')[0];
+            if (firstNameElement &&lastNameElement &&firstNameElement.textContent.trim() !== '' && lastNameElement.textContent.trim() !== ''){
+                saveRecord(row, uuid);
+            this.remove();
+            editButton.disabled=false;
+            }else{
+                alert("First and last name should not be empty");
+            }
+        });
+        row.insertCell().appendChild(saveButton);
+    }
+
+    function saveRecord(row, uuid) {
+        var cells = row.cells;
+        console.log(cells.textContent);
+        for (var i = 0; i < cells.length - 3; i++) {
+            var cell = cells[i];
+            cell.contentEditable = false;
+            // console.log(cell.textContent+"in fals");
+        }
+
+        var updatedData = {};
+        let properties = ['first_name', 'last_name', 'street', 'address', 'city', 'state', 'email', 'phone'];
+        updatedData['first_name']= row.getElementsByClassName('first_name')[0].textContent+"";
+        updatedData['last_name']= row.getElementsByClassName('last_name')[0].textContent+"";
+        
+        updatedData['street']= row.getElementsByClassName('street')[0].textContent+"";
+        updatedData['address']= row.getElementsByClassName('address')[0].textContent+"";
+        updatedData['city']= row.getElementsByClassName('city')[0].textContent+"";
+        updatedData['state']= row.getElementsByClassName('state')[0].textContent+"";
+        updatedData['email']= row.getElementsByClassName('email')[0].textContent+"";
+        updatedData['phone']= row.getElementsByClassName('phone')[0].textContent+"";
+        
+        axios("http://localhost:3000/api/assignment.jsp?cmd=update&uuid=" + uuid, {
+            method:'post',
+           headers: {
+                Authorization: "Bearer " + access_token,
+                "Content-Type": "application/json"
+
+            },
+            data: updatedData
+        })
+        .then(function (response) {
+            console.log(response);
+        })
+        .catch(function (error) {
+            // handle error
+            console.log("error occurred");
+            console.log(error);
+        });
+    }
+
+    function deleteCustomer(uuid) {
+        // Make API call to delete the customer record
+        axios("http://localhost:3000/api/assignment.jsp?cmd=delete&uuid=" + uuid, {
+            method : 'post',
+           headers: {
+                Authorization: "Bearer " + access_token,
+                "Content-Type": "application/json"
+
+            },
+        })
+        .then(function (response) {
+            console.log(response);
+            // Remove the row from the table
+            prompt('Record deleted successfully');
+            var row = document.getElementById(uuid);
+            
+            row.parentNode.removeChild(row);
+        })
+        .catch(function (error) {
+            // handle error
+            prompt('An error occurred in deleting the record');
+            console.log(error);
+        });
+    }
+    window.onload = getCustomerList;
+
+</script>
+
+</html>

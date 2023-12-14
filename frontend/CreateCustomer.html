@@ -1,134 +1,115 @@
 <!DOCTYPE html>
 <html>
 <head>
-    <title>Customer List</title>
-    <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
+    <title>Add New Customer</title>
+  <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 20px;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 10px;
+        }
+
+        input[type="text"],
+        input[type="email"] {
+            width: 200px;
+            padding: 5px;
+            margin-bottom: 10px;
+        }
+
+        button {
+            padding: 10px 20px;
+            background-color: #4CAF50;
+            color: white;
+            border: none;
+            cursor: pointer;
+        }
+
+        button:hover {
+            background-color: #45a049;
+        }
+    </style>
 </head>
 <body>
-    <h1>Customer List</h1>
-    <table id="customerTable">
-        <tr>
-            <th>First Name</th>
-            <th>Last Name</th>
-            <th>Street</th>
-            <th>Address</th>
-            <th>City</th>
-            <th>State</th>
-            <th>Email</th>
-            <th>Phone</th>
-            <th>Actions</th> <!-- New column for actions -->
-        </tr>
-    </table>
-</body>
-<script>
-    const access_token = localStorage.getItem("access_token");
-    console.log(access_token);
-    function deleteCustomer(uuid){
-        const url = "http://localhost:3000/api/assignment.jsp?cmd=delete&uuid=" + uuid;
-        axios.post(url,{
-            headers: {
-                Authorization: "Bearer " + access_token,
-                },
-            })
-            .then((res)=>{
-                console.log(res.status);
-            }).catch((err)=>{
-                console.log(err);
-            })
-    }
-    function editRecord(customer){
-        let tablerow = document.getElementById(customer.uuid);
-        console.log(tablerow);
-        var cells = tablerow.getElementsByTagName('td');
-            for (var i = 0; i < cells.length; i++) {
-                cells[i].setAttribute('contenteditable', 'true');
+    <h1>Create Customer</h1>
+    <form>
+        <label for="first_name">First Name:</label>
+        <input type="text" id="first_name" required><br>
+
+        <label for="last_name">Last Name:</label>
+        <input type="text" id="last_name" required><br>
+
+        <label for="street">Street:</label>
+        <input type="text" id="street"><br>
+
+        <label for="address">Address:</label>
+        <input type="text" id="address"><br>
+
+        <label for="city">City:</label>
+        <input type="text" id="city"><br>
+
+        <label for="state">State:</label>
+        <input type="text" id="state"><br>
+
+        <label for="email">Email:</label>
+        <input type="text" id="email"><br>
+
+        <label for="phone">Phone:</label>
+        <input type="number" id="phone"><br>
+
+        <button onclick="createCustomer()">Create Customer</button>
+    </form>
+
+    <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
+    <script>
+        const access_token = localStorage.getItem('access_token');
+        function createCustomer() {
+            event.preventDefault();
+
+            let firstName = document.getElementById("first_name").value;
+            let lastName = document.getElementById("last_name").value;
+
+            if (firstName.trim() === "" || lastName.trim() === "") {
+                alert("First name and last name must not be empty.");
+                return;
             }
-        const url = "http://localhost:3000/api/assignment.jsp?cmd=update&uuid=" + customer.uuid;
 
-        axios.post(url,{
-            headers: {
-                Authorization: "Bearer " + access_token,
-            },
-            data: {
-                    "first_name": customer.first_name,
-                    "last_name":  customer.last_name,
-                    "street":     customer.street,
-                    "address":    customer.address,
-                    "city":       customer.city,
-                    "state":      customer.state,
-                    "email":      customer.email,
-                    "phone":      customer.phone,
+            let body = {
+                "first_name": firstName,
+                "last_name": lastName,
+                "street": document.getElementById("street").value,
+                "address": document.getElementById("address").value,
+                "city": document.getElementById("city").value,
+                "state": document.getElementById("state").value,
+                "email": document.getElementById("email").value,
+                "phone": document.getElementById("phone").value
+            };
+
+            axios('http://localhost:3000/api/assignment.jsp?cmd=create', {
+                method: 'post',
+                headers: {
+                    Authorization: "Bearer " + access_token,
+                },
+                data: body
+            })
+            .then(function (response) {
+                if(response.staus===201){
+                    console.log(response.status);
+                    window.location.href = 'CustomerList.html';
+                }else{
+                    alert("error creating record");
+                    console.log(response.status);
                 }
-        })
-    }
-    function getCustomerList() {
-        axios.get("http://localhost:3000/api/assignment.jsp?cmd=get_customer_list", {
-            headers: {
-                Authorization: "Bearer " + access_token,
-            },
-        })
-        .then(function (response) {
-            console.log(response);
-            return response.data;
-        }).then(function(customers) {
-            var customerTable = document.getElementById("customerTable");
-            customers.forEach(function(customer) {
-                var row = customerTable.insertRow();
-                row.id=customer.uuid;
-                row.insertCell().textContent = customer.first_name;
-                row.insertCell().textContent = customer.last_name;
-                row.insertCell().textContent = customer.street;
-                row.insertCell().textContent = customer.address;
-                row.insertCell().textContent = customer.city;
-                row.insertCell().textContent = customer.state;
-                row.insertCell().textContent = customer.email;
-                row.insertCell().textContent = customer.phone;
-                
-                // Create delete and edit buttons
-                var actionsCell = row.insertCell();
-                var deleteButton = document.createElement("button");
-                deleteButton.textContent = "Delete";
-                deleteButton.addEventListener("click", function() {
-                    // Call delete function for the specific record
-                    deleteCustomer(customer.uuid);
-                });
-                actionsCell.appendChild(deleteButton);
-                
-                var editButton = document.createElement("button");
-                editButton.textContent = "Edit";
-                editButton.addEventListener("click", function() {
-                    // Call edit function for the specific record
                     
-                    editRecord(customer);
-                });
-                actionsCell.appendChild(editButton);
-            });
-        })
-        .catch(function (error) {
-            // handle error
-            console.log("error occurred");
-            console.log(error);
-        });
-    }
-
-
-    
-
-    // Call the getCustomerList function when the page loads
-    window.onload = getCustomerList;
-</script>
-</html>
-                    
-                });
-        })
-        .catch(function (error) {
-                // handle error
-                console.log("  error accured");
+            })
+            .catch(function (error) {
+                alert("ERROR please check console for further information");
                 console.log(error);
-        });
-    }
-
-    // Call the getCustomerList function when the page loads
-    window.onload = getCustomerList;
-</script>
+            });
+        }
+    </script>
+</body>
 </html>
